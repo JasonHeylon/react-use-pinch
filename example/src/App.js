@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-import { usePinch } from 'react-use-pinch';
+import MyComponent from './MyComponent';
 
 const App = () => {
-  const pinch = usePinch();
+  const [flag, setFlag] = useState(true);
+  const [eventFlag, setEventFlag] = useState(false);
 
-  return <div className='container'></div>;
+  return (
+    <div className='container'>
+      <div className='wrapper'>
+        {flag && (
+          <MyComponent
+            onPan={
+              eventFlag
+                ? () => {
+                    console.log('onPan fired');
+                  }
+                : null
+            }
+          />
+        )}
+      </div>
+      <div>
+        <button onClick={() => setFlag(!flag)}>show/hide</button>
+        <button onClick={() => setEventFlag(!eventFlag)}>change props</button>
+      </div>
+    </div>
+  );
 };
 export default App;
