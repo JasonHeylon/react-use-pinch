@@ -14,9 +14,9 @@ const MyComponent = () => {
       console.log('on onPinchStart fired', movement);
     },
     onPinch: (movement) => {
-      setRatio(movement.ratio);
-      setOffset(movement.offset);
-      setDegree(movement.angleDegree);
+      setRatio(movement.scaleRatio);
+      setOffset(movement.center);
+      setDegree(movement.rotate);
       console.log('on onPinch fired', movement);
     },
     onPinchEnd: () => {
@@ -30,7 +30,7 @@ const MyComponent = () => {
     },
     onPan: (movement) => {
       console.log('on onPan fired', movement);
-      setOffset(movement.offset);
+      setOffset(movement.center);
     },
     onPanEnd: () => {
       console.log('on onPanEnd fired');
