@@ -4,7 +4,7 @@ import {
   parsePointerEventToGestureTouch,
   isPanTouchEvent,
   isPinchTouchEvent,
-} from './EventUtils';
+} from './eventUtils';
 
 function log(msg: string, ...options: any[]): void {
   console.log(`[Gesture]: ${msg}`, options);
