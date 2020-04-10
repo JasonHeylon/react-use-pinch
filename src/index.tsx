@@ -14,7 +14,6 @@ interface IProps {
 type bindResult = {
   ref: React.MutableRefObject<HTMLElement | undefined>;
 };
-// type touchState = boolean | 'pan' | 'pinch';
 
 export const usePinch = ({
   onPinchStart,
@@ -32,28 +31,16 @@ export const usePinch = ({
     const gesture = gestureRef.current;
 
     if (domElement) {
-      // if (window.PointerEvent) {
-      //   domElement.addEventListener('pointerdown', gesture.handleTouchStart);
-      //   domElement.addEventListener('pointermove', gesture.handleTouchMove);
-      //   domElement.addEventListener('pointerup', gesture.handleTouchEnd);
-      // } else {
       domElement.addEventListener('touchstart', gesture.handleTouchStart);
       domElement.addEventListener('touchmove', gesture.handleTouchMove);
       domElement.addEventListener('touchend', gesture.handleTouchEnd);
-      // }
     }
 
     return (): void => {
       if (domElement) {
-        // if (window.PointerEvent) {
-        //   domElement.removeEventListener('pointerdown', gesture.handleTouchStart);
-        //   domElement.removeEventListener('pointermove', gesture.handleTouchMove);
-        //   domElement.removeEventListener('pointerup', gesture.handleTouchEnd);
-        // } else {
         domElement.removeEventListener('touchstart', gesture.handleTouchStart);
         domElement.removeEventListener('touchmove', gesture.handleTouchMove);
         domElement.removeEventListener('touchend', gesture.handleTouchEnd);
-        // }
       }
     };
   }, [ref, onPanStart]);

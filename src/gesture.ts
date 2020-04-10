@@ -1,4 +1,14 @@
 import { getPointOffset, getTwoPointsDistance, getTwoPointCenter, getRotateOfTwoLine } from './caculator';
+import {
+  parseTouchEventToGestureTouches,
+  parsePointerEventToGestureTouch,
+  isPanTouchEvent,
+  isPinchTouchEvent,
+} from './EventUtils';
+
+function log(msg: string, ...options: any[]): void {
+  console.log(`[Gesture]: ${msg}`, options);
+}
 
 export type GestureTouch = {
   id: number;
@@ -57,22 +67,22 @@ export default class Gesture {
     this.onPinchEnd = onPinchEnd;
   }
 
+  prevOffset: GestureOffset = {
+    center: { x: 0, y: 0 },
+    scaleRatio: 1,
+    rotate: 0,
+  };
+
   handleTouchStart = (event: TouchEvent | PointerEvent): void => {
     event.preventDefault();
-    console.log('touchStart', event);
+    log('touchStart', event);
 
     this.touchState = true;
 
     if (event instanceof window.TouchEvent) {
-      this.touchCache = Array.prototype.slice
-        .call(event.targetTouches)
-        .map((touch: Touch) => ({ clientX: touch.clientX, clientY: touch.clientY, id: touch.identifier }));
+      this.touchCache = parseTouchEventToGestureTouches(event);
     } else if (event instanceof window.PointerEvent) {
-      this.touchCache.push({
-        id: event.pointerId,
-        clientX: event.clientX,
-        clientY: event.clientY,
-      });
+      this.touchCache.push(parsePointerEventToGestureTouch(event));
     }
   };
 
@@ -80,21 +90,19 @@ export default class Gesture {
     if (!this.touchState) return;
 
     if (event instanceof window.TouchEvent) {
-      console.log('touches', event.touches.length);
-      console.log('targetTouches', event.targetTouches.length);
+      log('touches', event.touches.length);
+      log('targetTouches', event.targetTouches.length);
 
-      const touches = Array.prototype.slice
-        .call(event.targetTouches)
-        .map((touch: Touch) => ({ clientX: touch.clientX, clientY: touch.clientY, id: touch.identifier }));
+      const touches = parseTouchEventToGestureTouches(event);
 
-      if (event.touches.length === 1 && event.targetTouches.length === 1) {
+      if (isPanTouchEvent(event)) {
         const callback = this.touchState === 'pan' ? this.onPan : this.onPanStart;
         callback && this.handlePan(touches, callback);
 
         if (this.touchState !== 'pan') this.touchState = 'pan';
       }
 
-      if (event.touches.length >= 2 && event.targetTouches.length >= 2) {
+      if (isPinchTouchEvent(event)) {
         const callback = this.touchState === 'pinch' ? this.onPinch : this.onPinchStart;
         callback && this.handlePinch(touches, callback);
 
@@ -103,12 +111,11 @@ export default class Gesture {
     }
 
     // console.log('touchMove', event);
-    // onPanStart && onPanStart();
   };
 
   handleTouchEnd = (event: TouchEvent | PointerEvent): void => {
     console.log('touchEnd', event);
-    // onPanStart && onPanStart();
+
     switch (this.touchState) {
       case 'pan':
         this.onPanEnd && this.onPanEnd();
@@ -128,9 +135,10 @@ export default class Gesture {
     if (startPoint) {
       const offset: GestureOffset = {
         center: getPointOffset(currentTouch, startPoint),
-        scaleRatio: 0,
+        scaleRatio: 1,
         rotate: 0,
       };
+      this.prevOffset = offset;
 
       onPan(offset);
     } else {
@@ -160,12 +168,15 @@ export default class Gesture {
       };
 
       const rotate = getRotateOfTwoLine(currentPointOne, currentPointTwo, startPointOne, startPointTwo);
-
-      onPinch({
+      const offset = {
         center,
         scaleRatio,
         rotate,
-      });
+      };
+
+      this.prevOffset = offset;
+
+      onPinch(offset);
     } else {
       // empty touchCache
       this.touchCache = [];
